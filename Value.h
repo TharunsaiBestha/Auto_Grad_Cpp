@@ -13,7 +13,7 @@ struct Value{
     Node_type grad;
     std::string label;
     Value(Node_type v=Node_type{},std::pair<Value*,Value*> child={nullptr,nullptr},char ch=' ',std::string l=" "):value{v},
-    op{ch},label{l},visited{false},grad{},children{child}{}
+    visited{false},children{child},op{ch},grad{},label{l}{}
     Value(const Value& N){
         value=N.value;
         visited=N.visited;

@@ -1,39 +1,39 @@
 #include "Value.h"
-// template<typename T>
-// void update_grad_Node(T& Value){
-//     T& lhs=*Value.children.first;
-//     T& rhs=*Value.children.second;
-//     switch(Value.op){
-//         case '+':lhs.grad+=Value.grad;rhs.grad+=Value.grad;break;
-//         case '-':lhs.grad+=Value.grad;rhs.grad-=Value.grad;break;
-//         case '*':lhs.grad+=Value.grad*(rhs.value);
-//                  rhs.grad+=(lhs.value)*Value.grad;
-//                  break;
-//         case '/':lhs.grad+=Value.grad*(1/(rhs.value));
-//                  rhs.grad+=Value.grad*(-lhs.value/(rhs.value*rhs.value));
-//                  break;
-//         case 't':lhs.grad+=(1.0-pow(lhs.value,2))*Value.grad;break;
-//         case ' ':break;
-//     }
-// }
-template<typename T>
-void update_grad_Node(T& Value){
-    T& lhs=*Value.children.first;
-    T& rhs=*Value.children.second;
-    switch(Value.op){
-        case '+':lhs.grad+=Value.grad;rhs.grad+=Value.grad;break;
-        case '-':lhs.grad+=Value.grad;rhs.grad-=Value.grad;break;
-        case '*':lhs.grad+=Value.grad*transpose(rhs.value);
-                 rhs.grad+=transpose(lhs.value)*Value.grad;
-                 break;
-        case 't':lhs.grad+=(1.0-pow(lhs.value,2.0))*Value.grad;break;
-        case 's':lhs.grad+=lhs.value*(1.0-lhs.value)*Value.grad;break;
-        case 'S':lhs.grad+=Softmax_backpropagation(Value.grad,Value.value);break;
-        case 'T':lhs.grad+=transpose(Value.grad);break;
-        case 'E':lhs.grad+=SE_backpropagation(lhs.value,rhs.value);break;
-        case ' ':break;
-}
-}
+ template<typename T>
+ void update_grad_Node(T& Value){
+     T& lhs=*Value.children.first;
+     T& rhs=*Value.children.second;
+     switch(Value.op){
+         case '+':lhs.grad+=Value.grad;rhs.grad+=Value.grad;break;
+         case '-':lhs.grad+=Value.grad;rhs.grad-=Value.grad;break;
+         case '*':lhs.grad+=Value.grad*(rhs.value);
+                  rhs.grad+=(lhs.value)*Value.grad;
+                  break;
+         case '/':lhs.grad+=Value.grad*(1/(rhs.value));
+                  rhs.grad+=Value.grad*(-lhs.value/(rhs.value*rhs.value));
+                  break;
+         case 't':lhs.grad+=(1.0-pow(lhs.value,2))*Value.grad;break;
+         case ' ':break;
+     }
+ }
+//template<typename T>
+//void update_grad_Node(T& Value){
+//    T& lhs=*Value.children.first;
+//    T& rhs=*Value.children.second;
+//    switch(Value.op){
+//        case '+':lhs.grad+=Value.grad;rhs.grad+=Value.grad;break;
+//        case '-':lhs.grad+=Value.grad;rhs.grad-=Value.grad;break;
+//        case '*':lhs.grad+=Value.grad*transpose(rhs.value);
+//                 rhs.grad+=transpose(lhs.value)*Value.grad;
+//                 break;
+//        case 't':lhs.grad+=(1.0-pow(lhs.value,2.0))*Value.grad;break;
+//        case 's':lhs.grad+=lhs.value*(1.0-lhs.value)*Value.grad;break;
+//        case 'S':lhs.grad+=Softmax_backpropagation(Value.grad,Value.value);break;
+//        case 'T':lhs.grad+=transpose(Value.grad);break;
+//        case 'E':lhs.grad+=SE_backpropagation(lhs.value,rhs.value);break;
+//        case ' ':break;
+//}
+//}
 template<typename T>
 std::vector<T*> topological_sort(T* out){
     std::stack<T*> s;

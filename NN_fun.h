@@ -1,4 +1,4 @@
-#include "../Matrix/Matrix.h"
+#include "Matrix.h"
 template<typename T>
 void back_propagation_row(typename std::vector<T>::iterator start_in,typename std::vector<T>::iterator end_in,typename std::vector<T>::iterator start_out,
     typename std::vector<T>::iterator end_out){
