@@ -2,6 +2,7 @@
 #include "Graph_Algo.h"
 #include<cmath>
 #include "NN_fun.h"
+#include "Graph_storage.h"
 // template<typename Node_type,typename Edge_type>
 // using graph_itr=typename std::list<Node<Node_type,Edge_type>>::iterator;
 template<typename Node_type>
@@ -12,6 +13,7 @@ struct Value{
     char op;
     Node_type grad;
     std::string label;
+    static Graph_storage<Value<Node_type>> GS;
     Value(Node_type v=Node_type{},std::pair<Value*,Value*> child={nullptr,nullptr},char ch=' ',std::string l=" "):value{v},
     visited{false},children{child},op{ch},grad{},label{l}{}
     Value(const Value& N){
@@ -45,6 +47,9 @@ struct Value{
         label=std::move(N.label);
         return *this;
     }
+    typename std::list<Value<Node_type>>::iterator update(){
+        return GS.add_node(*this);
+    }
     void swap(Value& N){
         std::swap(value,N.value);
         std::swap(visited,N.visited);
@@ -53,111 +58,111 @@ struct Value{
         std::swap(grad,N.grad);
         std::swap(label,N.label);
     }
-    Value<Node_type> tanh(){
+    Value& tanh(){
         std::pair<Value<Node_type>*,Value<Node_type>*> child(this,nullptr);
         Value<Node_type> out(tanh(value),child,'t');
-        return out;
+        return *out.update();
     }
-    Value sigmoid(){
+    Value& sigmoid(){
         std::pair<Value<Node_type>*,Value<Node_type>*> child(this,nullptr);
         Value<Node_type> out(sigmoid(value),child,'s');
-        return out;
+        return *out.update();
     }
-    Value softmax(){
+    Value& softmax(){
         std::pair<Value<Node_type>*,Value<Node_type>*> child(this,nullptr);
         Value<Node_type> out(Softmax(value),child,'S');
-        return out;
+        return *out.update();
     }
-    Value T(){
+    Value& T(){
         std::pair<Value<Node_type>*,Value<Node_type>*> child(this,nullptr);
         Value<Node_type> out(transpose(value),child,'T');
-        return out;
+        return *out.update();
     }
-    Value Square_Error(Value<Node_type>& N){
+    Value& Square_Error(Value<Node_type>& N){
         std::pair<Value<Node_type>*,Value<Node_type>*> child(this,&N);
         Value<Node_type> out(SE(value,N.value),child,'E');
-        return out;
+        return *out.update();
     }
 };
 template<typename Node_type>
-Value<Node_type> operator+(Value<Node_type>& lhs,Value<Node_type>& rhs){
+Value<Node_type>& operator+(Value<Node_type>& lhs,Value<Node_type>& rhs){
     std::pair<Value<Node_type>*,Value<Node_type>*> child(&lhs,&rhs);
     Value<Node_type> out(lhs.value+rhs.value,child,'+');
-    return out;
+    return *out.update();
 }
 template<typename Node_type>
-Value<Node_type> operator+(Value<Node_type>&& lhs,Value<Node_type>& rhs){
+Value<Node_type>& operator+(Value<Node_type>&& lhs,Value<Node_type>& rhs){
     return lhs+rhs;
 }
 template<typename Node_type>
-Value<Node_type> operator+(Value<Node_type>& lhs,Value<Node_type>&& rhs){
+Value<Node_type>& operator+(Value<Node_type>& lhs,Value<Node_type>&& rhs){
     return lhs+rhs;
 }
 template<typename Node_type>
-Value<Node_type> operator+(Value<Node_type>&& lhs,Value<Node_type>&& rhs){
+Value<Node_type>& operator+(Value<Node_type>&& lhs,Value<Node_type>&& rhs){
     return lhs+rhs;
 }
 template<typename Node_type>
-Value<Node_type> operator+(Value<Node_type>& lhs,Node_type& rhs){
+Value<Node_type>& operator+(Value<Node_type>& lhs,Node_type& rhs){
     std::pair<Value<Node_type>*,Value<Node_type>*> child(&lhs,nullptr);
     Value<Node_type> out(lhs.value+rhs,child,'+');
-    return out;
+    return *out.update();
 }
 template<typename Node_type>
-Value<Node_type> operator+(Node_type& lhs,Value<Node_type> rhs){
+Value<Node_type>& operator+(Node_type& lhs,Value<Node_type> rhs){
     return rhs+lhs;
 }
 template<typename Node_type>
-Value<Node_type> operator-(Value<Node_type>& lhs,Value<Node_type>& rhs){
+Value<Node_type>& operator-(Value<Node_type>& lhs,Value<Node_type>& rhs){
     std::pair<Value<Node_type>*,Value<Node_type>*> child(&lhs,&rhs);
     Value<Node_type> out(lhs.value-rhs.value,child,'-');
-    return out;
+    return *out.update();
 }
 template<typename Node_type>
-Value<Node_type> operator-(Value<Node_type>&& lhs,Value<Node_type>& rhs){
+Value<Node_type>& operator-(Value<Node_type>&& lhs,Value<Node_type>& rhs){
     return lhs-rhs;
 }
 template<typename Node_type>
-Value<Node_type> operator-(Value<Node_type>& lhs,Value<Node_type>&& rhs){
+Value<Node_type>& operator-(Value<Node_type>& lhs,Value<Node_type>&& rhs){
     return lhs-rhs;
 }
 template<typename Node_type>
-Value<Node_type> operator-(Value<Node_type>&& lhs,Value<Node_type>&& rhs){
+Value<Node_type>& operator-(Value<Node_type>&& lhs,Value<Node_type>&& rhs){
     return lhs-rhs;
 }
 template<typename Node_type>
-Value<Node_type> operator*(Value<Node_type>& lhs,Value<Node_type>& rhs){
+Value<Node_type>& operator*(Value<Node_type>& lhs,Value<Node_type>& rhs){
     std::pair<Value<Node_type>*,Value<Node_type>*> child(&lhs,&rhs);
     Value<Node_type> out(lhs.value*rhs.value,child,'*');
-    return out;
+    return *out.update();
 }
 template<typename Node_type>
-Value<Node_type> operator*(Value<Node_type>&& lhs,Value<Node_type>& rhs){
+Value<Node_type>& operator*(Value<Node_type>&& lhs,Value<Node_type>& rhs){
     return lhs*rhs;
 }
 template<typename Node_type>
-Value<Node_type> operator*(Value<Node_type>& lhs,Value<Node_type>&& rhs){
+Value<Node_type>& operator*(Value<Node_type>& lhs,Value<Node_type>&& rhs){
     return lhs*rhs;
 }
 template<typename Node_type>
-Value<Node_type> operator*(Value<Node_type>&& lhs,Value<Node_type>&& rhs){
+Value<Node_type>& operator*(Value<Node_type>&& lhs,Value<Node_type>&& rhs){
     return lhs*rhs;
 }
 template<typename Node_type>
-Value<Node_type> operator/(Value<Node_type>& lhs,Value<Node_type>& rhs){
+Value<Node_type>& operator/(Value<Node_type>& lhs,Value<Node_type>& rhs){
     std::pair<Value<Node_type>*,Value<Node_type>*> child(&lhs,&rhs);
     Value<Node_type> out(lhs.value/rhs.value,child,'/');
-    return out;
+    return *out.update();
 }
 template<typename Node_type>
-Value<Node_type> operator/(Value<Node_type>&& lhs,Value<Node_type>& rhs){
+Value<Node_type>& operator/(Value<Node_type>&& lhs,Value<Node_type>& rhs){
     return lhs/rhs;
 }
 template<typename Node_type>
-Value<Node_type> operator/(Value<Node_type>& lhs,Value<Node_type>&& rhs){
+Value<Node_type>& operator/(Value<Node_type>& lhs,Value<Node_type>&& rhs){
     return lhs/rhs;
 }
 template<typename Node_type>
-Value<Node_type> operator/(Value<Node_type>&& lhs,Value<Node_type>&& rhs){
+Value<Node_type>& operator/(Value<Node_type>&& lhs,Value<Node_type>&& rhs){
     return lhs/rhs;
 }
