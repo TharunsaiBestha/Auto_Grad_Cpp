@@ -67,3 +67,15 @@ void backpropagate(T* out){
         update_grad_Node(*i);
     }
 }
+template<typename T>
+struct Network_Handler{
+std::vector<T*> v;
+T* out;
+Network_Handler(T* Node):out{Node}{}
+void order_nodes(){
+    v=topological_sort(out);
+}
+void back_propagate(){
+    for(auto i:v)update_grad_Node(*i);
+}
+};

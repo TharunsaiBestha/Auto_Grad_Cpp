@@ -74,6 +74,87 @@ Matrix<T> out;
         return out;
 }
 template<typename T>
+Matrix<T> mean_back_prop(Matrix<T>& grad,Matrix<T>& para){
+    Matrix<T> res(1,grad.dim().first);
+    T temp;
+    for(int i=0;i<grad.dim().first;i++){
+        temp=0;
+        for(int j=0;j<grad.dim().second;j++){
+            temp+=grad(i,j);
+        }
+        res(0,i)=-temp/std::sqrt(para(1,i));
+    }
+    return res;
+}
+template<typename T>
+Matrix<T> input_back_prop(Matrix<T>& grad,Matrix<T>& para){
+    Matrix<T> res(grad.dim().first,grad.dim().second);
+    for(int i=0;i<grad.dim().first;i++){
+        for(int j=0;j<grad.dim().second;j++){
+            res(i,j)=grad(i,j)/std::sqrt(para(1,i));
+        }
+    }
+    return res;
+}
+template<typename T>
+Matrix<T> var_back_prop(Matrix<T>& grad,Matrix<T>& input,Matrix<T>& para){
+    Matrix<T> temp_m(grad.dim().first,grad.dim().second);
+    Matrix<T> diff(grad.dim().first,grad.dim().second);
+    Matrix<T> res(grad.dim().first,grad.dim().second);
+    Matrix<T> temp_mean;
+    T temp;
+    for(int i=0;i<grad.dim().first;i++){
+       temp=(-2*std::pow(std::sqrt(para(1,i)),3));
+       temp=1/temp; 
+        for(int j=0;j<grad.dim().second;j++){
+            temp_m(i,j)=temp*(input(i,j)-para(0,i))*grad(i,j);
+            diff(i,j)=input(i,j)-para(0,i);
+        }
+    }
+    temp_mean=mean(temp_m,true);
+     for(int i=0;i<grad.dim().first;i++){
+        for(int j=0;j<grad.dim().second;j++){
+            res(i,j)=2*temp_mean(0,i)*diff(i,j);
+        }
+     }
+     return res;
+}
+template<typename T>
+Matrix<T> BN_back_prop(Matrix<T>& grad,Matrix<T>& input,Matrix<T>& para){
+    bool flag=para(2,3)<=0;
+    T m,var,temp;
+    T wrt_mean;
+    Matrix<T> wrt_var,wrt_x,diff;
+    Matrix<T> temp_m,temp_v,temp_x,dummy,temp_row;
+    Matrix<T> temp_res(grad.dim().first,grad.dim().second);
+    if(!flag){
+        m=para(0,0);
+        var=para(1,0);
+        dummy=mean(grad);
+        wrt_mean=(-1/std::sqrt(var))*dummy(0,0);
+        wrt_x=(1/std::sqrt(var))*grad;
+        temp=(-2*std::pow(std::sqrt(var),3));
+        temp=1/temp;
+        diff=input-m;
+        temp_m=temp*dot_prod(diff,grad);
+        dummy=mean(temp_m);
+        wrt_var=2*dummy(0,0)*diff;
+        return wrt_x+wrt_var+wrt_mean;
+    }
+    else{                                               //Requires testing when flag is true;
+        temp_x=input_back_prop(grad,para);
+        temp_m=mean_back_prop(grad,para);
+        temp_v=var_back_prop(grad,input,para);
+        temp_row.set_dim(grad.dim().first,grad.dim().second);
+        for(int i=0;i<grad.dim().first;i++){
+            for(int j=0;j<grad.dim().second;j++){
+                temp_row(i,j)=temp_x(i,j)+temp_m(0,i)+temp_v(i,j);
+            }
+        }
+        return temp_row;
+    }
+}
+template<typename T>
 auto SE(Matrix<T>& in,Matrix<T> real_output){
     auto Square_Error=[](T out,T real_out){
         return (out-real_out)*(out-real_out)/2.0;

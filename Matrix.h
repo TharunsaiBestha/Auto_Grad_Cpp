@@ -5,6 +5,7 @@
 #include<fstream>
 #include "stdc++.h"
 #include<limits>
+#include<numeric>
 template<typename T>
 class Matrix
 {
@@ -595,7 +596,7 @@ Matrix<T> mean(Matrix<T>& M,bool flag=false){
     Matrix<T> res;
     if(!flag){
         res.set_dim(1,1);
-        res(0,0)=std::accumulate(M.get_vector().begin,M.get_vector().end)/(M.dim().first*M.dim().second);
+        res(0,0)=std::accumulate(M.get_vector().begin(),M.get_vector().end(),T{})/(M.dim().first*M.dim().second);
     }
     else{
         res.set_dim(1,M.dim().first);
@@ -610,13 +611,14 @@ Matrix<T> varience(Matrix<T>& M,bool flag=false){
     Matrix<T> mu=mean(M,flag);
     Matrix<T> res;
     if(!flag){
-        res(0,0)=std::accumulate(M.get_vector().begin,M.get_vector().end,
-        [&](T x,T y){return x+std::pow(y-mu(0,0),2);});
+        res.set_dim(1,1);
+        res(0,0)=std::accumulate(M.get_vector().begin(),M.get_vector().end(),T{},
+        [&](T x,T y){return x+std::pow(y-mu(0,0),2);})/(M.dim().first*M.dim().second);
     }
     else{
         res.set_dim(1,M.dim().first);
         for(int i=0;i<M.dim().second;i++){
-            res(0,i)=row_op(M,[&](T x,T y){return x+std::pow(y-mu(0,i),2);});
+            res(0,i)=row_op(M,i,[&](T x,T y){return x+std::pow(y-mu(0,i),2);});
             res(0,i)=res(0,i)/M.dim().second;
         }
     }
@@ -626,23 +628,23 @@ template<typename T>
 std::pair<Matrix<T>,Matrix<T>> normalization(Matrix<T>& M,T gemma=1,T beta=0,T epsolon=0,bool flag=false){
     Matrix<T> m,v;
     Matrix<T> out(M.dim().first,M.dim().second);
-    std::pair<Matrix<T>,Matrix<T>> res;
-    res.second.set_dim(3,std::max(M.dim().second,4));
+    std::pair<Matrix<T>,Matrix<T>> res; //first element has normalized output second has mean mean and varience
+    res.second.set_dim(3,std::max(M.dim().first,(size_t)4));
     m=mean(M,flag);
     v=varience(M,flag);
     if(!flag){
         res.second(2,3)=std::numeric_limits<T>::max();
         Transform(M,out,[&](T x){return (x-m(0,0))/std::sqrt(v(0,0)+epsolon);});
-        res(0,0)=m(0,0);
-        res(1,0)=v(0,0);       
+        res.second(0,0)=m(0,0);
+        res.second(1,0)=v(0,0);       
     }
-    else{
+    else{                           //requires testing flag is true path 
         res.second(2,3)=std::numeric_limits<T>::lowest();
-        for(int i=0;i<M.dim().second;i++){
+        for(int i=0;i<M.dim().first;i++){
             row_transform(M,i,[&](T x){return (x-m(0,i))/std::sqrt(v(0,i)+epsolon);});
         }
     }
-    for(int i=0;i<M.dim().second;i++){
+    for(int i=0;i<M.dim().first;i++){
         res.second(0,i)=m(0,i);
         res.second(1,i)=v(0,i);
     }
