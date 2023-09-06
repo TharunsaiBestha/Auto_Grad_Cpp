@@ -78,6 +78,11 @@ struct Value{
         Value<Node_type> out(transpose(value),child,'T');
         return *out.update();
     }
+    Value& Normalization(bool flag=false){
+        std::pair<Value<Node_type>*,Value<Node_type>*> child(this,nullptr);
+        Value<Node_type> out(normalization(value),child,'N');
+        return *out.update();
+    }
     Value& Square_Error(Value<Node_type>& N){
         std::pair<Value<Node_type>*,Value<Node_type>*> child(this,&N);
         Value<Node_type> out(SE(value,N.value),child,'E');

@@ -1,21 +1,4 @@
 #include "Value.h"
- template<typename T>
- void update_grad_Node(T& Value){
-     T& lhs=*Value.children.first;
-     T& rhs=*Value.children.second;
-     switch(Value.op){
-         case '+':lhs.grad+=Value.grad;rhs.grad+=Value.grad;break;
-         case '-':lhs.grad+=Value.grad;rhs.grad-=Value.grad;break;
-         case '*':lhs.grad+=Value.grad*(rhs.value);
-                  rhs.grad+=(lhs.value)*Value.grad;
-                  break;
-         case '/':lhs.grad+=Value.grad*(1/(rhs.value));
-                  rhs.grad+=Value.grad*(-lhs.value/(rhs.value*rhs.value));
-                  break;
-         case 't':lhs.grad+=(1.0-pow(lhs.value,2))*Value.grad;break;
-         case ' ':break;
-     }
- }
 //template<typename T>
 //void update_grad_Node(T& Value){
 //    T& lhs=*Value.children.first;
@@ -33,7 +16,36 @@
 //        case 'E':lhs.grad+=SE_backpropagation(lhs.value,rhs.value);break;
 //        case ' ':break;
 //}
-//}
+template<typename T>
+void update_Value_Node(T& Node){
+     T& lhs=*Node.children.first;
+     T& rhs=*Node.children.second;
+     switch(Node.op){
+        case '+': Node.value=lhs.value+rhs.value;break;
+        case '-': Node.value=lhs.value-rhs.value;break;
+        case '*': Node.value=lhs.value*rhs.value;break;
+        case '/': Node.value=lhs.value/rhs.value;break;
+        case 't': Node.value=tanh(lhs.value);break;
+        case ' ':break;
+     }
+}
+template<typename T>
+ void update_grad_Node(T& Node){
+     T& lhs=*Node.children.first;
+     T& rhs=*Node.children.second;
+     switch(Node.op){
+         case '+':lhs.grad+=Node.grad;rhs.grad+=Node.grad;break;
+         case '-':lhs.grad+=Node.grad;rhs.grad-=Node.grad;break;
+         case '*':lhs.grad+=Node.grad*(rhs.value);
+                  rhs.grad+=(lhs.value)*Node.grad;
+                  break;
+         case '/':lhs.grad+=Node.grad*(1/(rhs.value));
+                  rhs.grad+=Node.grad*(-lhs.value/(rhs.value*rhs.value));
+                  break;
+         case 't':lhs.grad+=(1.0-pow(lhs.value,2))*Node.grad;break;
+         case ' ':break;
+     }
+ }
 template<typename T>
 std::vector<T*> topological_sort(T* out){
     std::stack<T*> s;
@@ -74,6 +86,9 @@ T* out;
 Network_Handler(T* Node):out{Node}{}
 void order_nodes(){
     v=topological_sort(out);
+}
+void forward(){
+ for(auto i=v.rbegin();i!=v.rend();i++)update_Value_Node(**i);   
 }
 void back_propagate(){
     for(auto i:v)update_grad_Node(*i);
